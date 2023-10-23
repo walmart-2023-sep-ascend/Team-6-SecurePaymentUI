@@ -1,0 +1,27 @@
+/* src/components/PaymentOptions.css */
+
+.payment-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+  
+  .payment-option .icon-plus::before {
+    content: "+";
+  }
+  
+  .payment-option .icon-minus::before {
+    content: "-";
+  }
+  
+  input[type="text"] {
+    width: 100%;
+    padding: 5px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+  }
+  
