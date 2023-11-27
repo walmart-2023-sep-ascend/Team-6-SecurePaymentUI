@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import './PaymentPage.css'; // Import your custom CSS for styling
-import Footer from './Footer';
-import Header from './Header';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import './PaymentPage.css';
 
 function PaymentPage() {
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
@@ -15,24 +14,20 @@ function PaymentPage() {
     deliveryAddress: '',
     contactNumber: '',
   });
-  const [digitalWalletInfo, setDigitalWalletInfo] = useState({
-    walletName: '',
-    walletPassword: '',
-  });
+  
 
-  // Hardcoded wallet balance for demonstration
-  const walletBalance = 500; // Replace with the actual balance from the backend
-
-  const [paymentInProgress, setPaymentInProgress] = useState(false); // State for showing/hiding overlay
-  const [accordionActive, setAccordionActive] = useState(null); // State to track active accordion
+  const walletBalance = 500;
+  const [paymentInProgress, setPaymentInProgress] = useState(false);
+  const [accordionActive, setAccordionActive] = useState(null);
   const [otp, setOtp] = useState('');
-  const [timer, setTimer] = useState(60); // Initial timer value in seconds
+  const [timer, setTimer] = useState(60);
   const [otpSent, setOtpSent] = useState(false);
   const [resendDisabled, setResendDisabled] = useState(false);
   const [generateOtp, setGenerateOtp] = useState(true);
-  const [incorrectOtp, setIncorrectOtp] = useState(false); // State for incorrect OTP message
-  // State to track OTP verification status
+  const [incorrectOtp, setIncorrectOtp] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
+
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const handlePaymentMethodChange = (method) => {
     setPaymentMethod(method);
@@ -54,38 +49,33 @@ function PaymentPage() {
     });
   };
 
-  const handleDigitalWalletInfoChange = (e) => {
-    const { name, value } = e.target;
-    setDigitalWalletInfo({
-      ...digitalWalletInfo,
-      [name]: value,
-    });
-  };
 
   const handleSubmit = () => {
-    // Show payment in progress overlay
     setPaymentInProgress(true);
+    console.log(paymentMethod);
 
-    // Simulate payment processing (e.g., with a setTimeout)
     setTimeout(() => {
-      // Hide payment in progress overlay
       setPaymentInProgress(false);
 
-      // Handle the payment submission here based on the selected payment method
       if (paymentMethod === 'credit_card') {
-        // Submit credit card details from paymentInfo object
         const { cardNumber, cardHolder, expirationDate, cvv } = paymentInfo;
-        // Perform the necessary actions to process the payment
       } else if (paymentMethod === 'digital_wallet') {
-        // Submit digital wallet details from digitalWalletInfo object
-        const { walletName, walletPassword } = digitalWalletInfo;
-        // Perform the necessary actions to process the payment
+        console.log('Wtest1');
+        // Simulate debit from the wallet for demonstration
+        if (otpVerified) {
+          // Debit the wallet amount
+          debitWallet();
+        }
       } else if (paymentMethod === 'cash_on_delivery') {
-        // Submit cash on delivery details from cashOnDeliveryInfo object
         const { deliveryAddress, contactNumber } = cashOnDeliveryInfo;
-        // Perform the necessary actions to process the payment
       }
-    }, 5000); // Simulate a 5-second payment processing delay
+    }, 1000);
+  };
+
+  const debitWallet = () => {
+    // Simulate debiting the wallet amount
+    console.log('Wallet debited successfully.');
+    navigate('/ThankYouPage');
   };
 
   // Function to toggle the accordion
@@ -93,9 +83,19 @@ function PaymentPage() {
     if (accordionActive === index) {
       // Clicking on the active accordion closes it
       setAccordionActive(null);
+      // Set the payment method to 'credit_card' when the accordion is closed
+      handlePaymentMethodChange('credit_card');
     } else {
       // Clicking on a closed accordion opens it
       setAccordionActive(index);
+      // Set the payment method based on the index (or other logic)
+      if (index === 1) {
+        handlePaymentMethodChange('credit_card');
+      } else if (index === 2) {
+        handlePaymentMethodChange('digital_wallet');
+      } else if (index === 3) {
+        handlePaymentMethodChange('cash_on_delivery');
+      }
     }
   };
 
@@ -141,6 +141,33 @@ function PaymentPage() {
     setResendDisabled(true);
     setGenerateOtp(false); // Set to false to hide "Generate OTP" button
     setIncorrectOtp(false); // Reset incorrect OTP message
+  };
+
+  const handleDebitAndRedirect = async () => {
+    // You can make an API call to debit the wallet amount here
+    try {
+      // Make an API call to your backend to debit the wallet amount
+      // Example:
+      const response = await fetch('/api/debit-wallet', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          // Include any necessary data to perform the debit
+        }),
+      });
+
+      if (response.ok) {
+        // Debit was successful
+        navigate('/thank-you')// Redirect to the 'Thank You' page
+      } else {
+        // Handle debit failure, maybe show an error message
+        console.error('Debit failed');
+      }
+    } catch (error) {
+      console.error('Error during debit:', error);
+    }
   };
 
   useEffect(() => {
@@ -270,7 +297,7 @@ function PaymentPage() {
           <div className={`accordion ${accordionActive === 3 ? 'active' : ''}`}>
             <div
               className="accordion-title"
-              onClick={() => toggleAccordion(3)}
+              onClick={() => toggleAccordion(3)} 
             >
               Cash on Delivery
               <div className={`accordion-arrow ${accordionActive === 3 ? 'active' : ''}`}></div>

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './FeedbackForm.css'; // Import the CSS styles
-import Footer from './Footer';
-import Header from './Header';
+import axios from 'axios';
 
 function FeedbackForm() {
     const [responses, setResponses] = useState({
@@ -39,7 +38,7 @@ function FeedbackForm() {
       setUserComments(e.target.value);
     };
   
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
       const isAllQuestionsAnswered =
         responses.question1 !== 0 &&
         responses.question2 !== 0 &&
@@ -50,6 +49,51 @@ function FeedbackForm() {
       if (isAllQuestionsAnswered) {
         console.log('User feedback:', responses);
         console.log('User comments:', userComments);
+        const feedbackData = {
+          cartId: 1, // Replace with the actual cart ID
+          userId: 10, // Replace with the actual user ID
+          response: [
+            { response: responses.question1 },
+            { response: responses.question2 },
+            { response: responses.question3 },
+            { response: responses.question4 },
+            { response: responses.question5 },
+          ],
+          averageRating: (
+            (responses.question1 +
+              responses.question2 +
+              responses.question3 +
+              responses.question4 +
+              responses.question5) /
+            5
+          ).toFixed(1), // Calculate the average rating
+          comments: userComments,
+        }; 
+
+        try {
+          // Send the feedback data to your backend using an API endpoint
+          const response = await axios.post('http://localhost:3001', feedbackData);
+  
+          // Handle the response (you can log it or show a success message)
+          console.log('Feedback submitted successfully:', response.data);
+  
+          // Optionally, clear the form fields or navigate to another page
+          setResponses({
+            question1: 0,
+            question2: 0,
+            question3: 0,
+            question4: 0,
+            question5: 0,
+          });
+          setUserComments('');
+  
+          // Optionally, navigate to a success page
+          // For example, you can use a library like 'react-router-dom' to navigate to a success page.
+          // Example: history.push('/success');
+        } catch (error) {
+          // Handle any errors (e.g., show an error message)
+          console.error('Error while submitting feedback:', error);
+        }
   
         // You can send the 'responses' object and 'userComments' to your backend or perform any other actions here
         // Reset the form or navigate to another page

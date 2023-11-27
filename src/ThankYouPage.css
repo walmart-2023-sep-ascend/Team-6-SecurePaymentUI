@@ -1,0 +1,21 @@
+/* ThankYouPage.css */
+
+.thank-you-container {
+    /* Add container styles if needed */
+  }
+  
+  .thank-you-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .order-details {
+    margin-top: 20px;
+    border: 1px solid #ddd;
+    padding: 10px;
+  }
+  
+  /* Add more styles as needed for your specific design */
+  
