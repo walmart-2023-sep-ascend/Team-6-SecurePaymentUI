@@ -6,7 +6,7 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  min-height: 100vh;
+  min-height: 75vh;
   background-color: #f4f4f4;
   padding: 20px;
 }
@@ -84,7 +84,7 @@
 .accordion-arrow::after {
   content: '+';
   font-size: 15px;
-  color: aquamarine;
+  color: rgb(7, 248, 168);
   transition: transform 0.3s ease-in-out;
 }
 
@@ -180,4 +180,24 @@ button:hover {
 /* Footer copyright styles */
 .footer-copyright {
   font-weight: bold;
+}
+
+.digital-wallet-info {
+  margin-top: 10px;
+}
+
+.digital-wallet-info p {
+  margin-bottom: 5px;
+}
+
+.otp-input {
+  margin-bottom: 8px;
+}
+
+.otp-validation-button {
+  margin-right: 8px;
+}
+
+.otp-resend-button {
+  margin-top: 8px;
 }

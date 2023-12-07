@@ -6,17 +6,20 @@ import ThankYouPage from './ThankYouPage';
 import Header from './Header';
 import Footer from './Footer';
 import { Routes, Route } from 'react-router-dom';
+import FeedBackThank from './FeedBackThank';
+import ReviewForm from './ReviewForm';
 
 function App() {
   return (
     <div className="App">
     <Header />
-    <h1>Secure Payment Page</h1>
       <div className="payment-container">
       <Routes>
         <Route path="/PaymentPage" element={<PaymentPage />} />
         <Route path="/ThankYouPage" element={<ThankYouPage />} />
-        <Route path="/FeedbackForm" element={<FeedbackForm />} />
+        <Route path="/FeedbackForm/:userID/:cartID" element={<FeedbackForm />} />
+        <Route path="/FeedBackThank" element={<FeedBackThank /> } />
+        <Route path="/ReviewForm" element={<ReviewForm /> } />
       </Routes>
       </div>
     <Footer />

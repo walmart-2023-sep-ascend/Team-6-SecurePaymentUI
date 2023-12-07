@@ -7,7 +7,8 @@
   color: #fff;
   padding: 10px;
   text-align: center;
-  z-index: 1; /* Ensure it's above other content */
+  z-index: 1; 
+  height: 50px;
 }
 
 .footer {
@@ -27,16 +28,23 @@
 .App {
   text-align: center;
   font-family: Arial, Helvetica, sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-.content-container {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: #fff;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-  margin-top: 20px;
-  margin-bottom: 20px;
+.payment-container {
+  margin-top: 50px;
+  min-height: calc(100vh - 120px); 
+  display: flex;
+  flex-direction: column;
+
 }
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+
+}
+

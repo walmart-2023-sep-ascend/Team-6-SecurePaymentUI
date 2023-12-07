@@ -7,10 +7,10 @@ function Header() {
     <header className="header">
       <div className="header-container">
         <div className="logo">
-          <img src={logo} alt="Walmart Logo" width="50" height="50" /> {/* Adjust width and height as needed */}
+          <img src={logo} alt="Walmart Logo"  /> 
         </div>
         <div className="title">
-          <h3>Wall-E-Cart Online Shopping</h3>
+          <h3>WalECart Online Shopping</h3>
         </div>
       </div>
     </header>

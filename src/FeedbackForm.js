@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import './FeedbackForm.css'; // Import the CSS styles
 import axios from 'axios';
+import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import Loader from './Loader';
 
 function FeedbackForm() {
+    const navigate = useNavigate();
     const [responses, setResponses] = useState({
       question1: 0,
       question2: 0,
@@ -10,9 +14,11 @@ function FeedbackForm() {
       question4: 0,
       question5: 0,
     });
-  
+
+    const { userID, cartID } = useParams();
+
     const [userComments, setUserComments] = useState('');
-  
+    const [loading, setLoading] = useState(false); 
     const [allQuestionsAnswered, setAllQuestionsAnswered] = useState(false);
   
     const handleStarClick = (question, rating) => {
@@ -45,13 +51,14 @@ function FeedbackForm() {
         responses.question3 !== 0 &&
         responses.question4 !== 0 &&
         responses.question5 !== 0;
-  
+    
       if (isAllQuestionsAnswered) {
         console.log('User feedback:', responses);
         console.log('User comments:', userComments);
+    
         const feedbackData = {
-          cartId: 1, // Replace with the actual cart ID
-          userId: 10, // Replace with the actual user ID
+          cartId: cartID, 
+          userId: userID, 
           response: [
             { response: responses.question1 },
             { response: responses.question2 },
@@ -68,155 +75,165 @@ function FeedbackForm() {
             5
           ).toFixed(1), // Calculate the average rating
           comments: userComments,
-        }; 
-
+        };
+    
         try {
+          setLoading(true);
           // Send the feedback data to your backend using an API endpoint
-          const response = await axios.post('http://localhost:3001', feedbackData);
-  
-          // Handle the response (you can log it or show a success message)
-          console.log('Feedback submitted successfully:', response.data);
-  
-          // Optionally, clear the form fields or navigate to another page
-          setResponses({
-            question1: 0,
-            question2: 0,
-            question3: 0,
-            question4: 0,
-            question5: 0,
-          });
-          setUserComments('');
-  
-          // Optionally, navigate to a success page
-          // For example, you can use a library like 'react-router-dom' to navigate to a success page.
-          // Example: history.push('/success');
+          const response = await axios.post('http://localhost:6005/addresponse', feedbackData);
+
+          if (response.status === 201) {
+            setLoading(false);
+            console.log('Feedback submitted successfully:', response.data);
+    
+            // Optionally, clear the form fields or navigate to another page
+            setResponses({
+              question1: 0,
+              question2: 0,
+              question3: 0,
+              question4: 0,
+              question5: 0,
+            });
+            setUserComments('');
+            navigate('/FeedBackThank')
+          } else {
+            setLoading(false);
+            // Log an error or handle the response accordingly
+            console.error('Error while submitting feedback. Status:', response.status);
+          }
+          
         } catch (error) {
+          setLoading(false);
           // Handle any errors (e.g., show an error message)
           console.error('Error while submitting feedback:', error);
         }
-  
-        // You can send the 'responses' object and 'userComments' to your backend or perform any other actions here
-        // Reset the form or navigate to another page
       } else {
         alert('Please answer all questions before submitting.');
       }
     };
+    
 
   return (
-    <div className="feedback-form">
-      <h2>Customer Feedback</h2>
+    <div className="feedback-container">
+      <div className="feedback-form">
+        <h2>Customer Feedback</h2>
 
-      {/* Question 1 */}
-      <div className="question">
-        <p>1. Were you able to find the exact item you were looking for?
-        <span className="mandatory">*</span>
-        </p>
-        {/* Star ratings */}
-        <div className="star-ratings">
-          {[1, 2, 3, 4, 5].map((rating) => (
-            <span
-              key={`question1-rating-${rating}`}
-              className={`star ${responses.question1 >= rating ? 'selected' : ''}`}
-              onClick={() => handleStarClick('question1', rating)}
-            >
-              ★
-            </span>
-          ))}
+        {/* Question 1 */}
+        <div className="question">
+          <p>1. Were you able to find the exact item you were looking for?
+          <span className="mandatory">*</span>
+          </p>
+          {/* Star ratings */}
+          <div className="star-ratings">
+            {[1, 2, 3, 4, 5].map((rating) => (
+              <span
+                key={`question1-rating-${rating}`}
+                className={`star ${responses.question1 >= rating ? 'selected' : ''}`}
+                onClick={() => handleStarClick('question1', rating)}
+              >
+                ★
+              </span>
+            ))}
+          </div>
         </div>
+
+        {/* Question 2 */}
+        <div className="question">
+          <p>2. Is the price of the product reasonable?
+          <span className="mandatory">*</span>
+          </p>
+          {/* Star ratings */}
+          <div className="star-ratings">
+            {[1, 2, 3, 4, 5].map((rating) => (
+              <span
+                key={`question2-rating-${rating}`}
+                className={`star ${responses.question2 >= rating ? 'selected' : ''}`}
+                onClick={() => handleStarClick('question2', rating)}
+              >
+                ★
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Question 3 */}
+        <div className="question">
+          <p>3. Are you able to quickly compare similar products?
+          <span className="mandatory">*</span>
+          </p>
+          {/* Star ratings */}
+          <div className="star-ratings">
+            {[1, 2, 3, 4, 5].map((rating) => (
+              <span
+                key={`question3-rating-${rating}`}
+                className={`star ${responses.question3 >= rating ? 'selected' : ''}`}
+                onClick={() => handleStarClick('question3', rating)}
+              >
+                ★
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Question 4 */}
+        <div className="question">
+          <p>4. How is the experience with suggested products if the exact product is not available?
+          <span className="mandatory">*</span>
+          </p>
+          {/* Star ratings */}
+          <div className="star-ratings">
+            {[1, 2, 3, 4, 5].map((rating) => (
+              <span
+                key={`question4-rating-${rating}`}
+                className={`star ${responses.question4 >= rating ? 'selected' : ''}`}
+                onClick={() => handleStarClick('question4', rating)}
+              >
+                ★
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Question 5 */}
+        <div className="question">
+          <p>5. Your overall shopping experience with us?
+          <span className="mandatory">*</span>
+          </p>
+          {/* Star ratings */}
+          <div className="star-ratings">
+            {[1, 2, 3, 4, 5].map((rating) => (
+              <span
+                key={`question5-rating-${rating}`}
+                className={`star ${responses.question5 >= rating ? 'selected' : ''}`}
+                onClick={() => handleStarClick('question5', rating)}
+              >
+                ★
+              </span>
+            ))}
+          </div>
+        </div>
+          {/* User Comments */}
+          <div className="user-comments">
+          <label htmlFor="comments">Comments:</label>
+          <div><textarea
+              id="comments"
+              name="comments"
+              value={userComments}
+              onChange={handleUserCommentsChange}
+              rows="4"
+              cols="10"
+          /></div>
+          </div>
+
+        {/* Submit button */}
+        {loading ? ( // Show loader if loading state is true
+          <Loader />
+        ) : (
+        <button className={`text-center ${allQuestionsAnswered ? '' : 'disabled'}`} onClick={handleSubmit}>
+          Submit Feedback
+        </button>
+        )}
       </div>
-
-      {/* Question 2 */}
-      <div className="question">
-        <p>2. Is the price of the product reasonable?
-        <span className="mandatory">*</span>
-        </p>
-        {/* Star ratings */}
-        <div className="star-ratings">
-          {[1, 2, 3, 4, 5].map((rating) => (
-            <span
-              key={`question2-rating-${rating}`}
-              className={`star ${responses.question2 >= rating ? 'selected' : ''}`}
-              onClick={() => handleStarClick('question2', rating)}
-            >
-              ★
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Question 3 */}
-      <div className="question">
-        <p>3. Are you able to quickly compare similar products?
-        <span className="mandatory">*</span>
-        </p>
-        {/* Star ratings */}
-        <div className="star-ratings">
-          {[1, 2, 3, 4, 5].map((rating) => (
-            <span
-              key={`question3-rating-${rating}`}
-              className={`star ${responses.question3 >= rating ? 'selected' : ''}`}
-              onClick={() => handleStarClick('question3', rating)}
-            >
-              ★
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Question 4 */}
-      <div className="question">
-        <p>4. How is the experience with suggested products if the exact product is not available?
-        <span className="mandatory">*</span>
-        </p>
-        {/* Star ratings */}
-        <div className="star-ratings">
-          {[1, 2, 3, 4, 5].map((rating) => (
-            <span
-              key={`question4-rating-${rating}`}
-              className={`star ${responses.question4 >= rating ? 'selected' : ''}`}
-              onClick={() => handleStarClick('question4', rating)}
-            >
-              ★
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Question 5 */}
-      <div className="question">
-        <p>5. Your overall shopping experience with us?
-        <span className="mandatory">*</span>
-        </p>
-        {/* Star ratings */}
-        <div className="star-ratings">
-          {[1, 2, 3, 4, 5].map((rating) => (
-            <span
-              key={`question5-rating-${rating}`}
-              className={`star ${responses.question5 >= rating ? 'selected' : ''}`}
-              onClick={() => handleStarClick('question5', rating)}
-            >
-              ★
-            </span>
-          ))}
-        </div>
-      </div>
-        {/* User Comments */}
-        <div className="user-comments">
-        <label htmlFor="comments">Comments:</label>
-        <div><textarea
-            id="comments"
-            name="comments"
-            value={userComments}
-            onChange={handleUserCommentsChange}
-            rows="4"
-            cols="10"
-        /></div>
-        </div>
-
-      {/* Submit button */}
-      <button className={`text-center ${allQuestionsAnswered ? '' : 'disabled'}`} onClick={handleSubmit}>
-        Submit Feedback
-      </button>
     </div>
   );
 }

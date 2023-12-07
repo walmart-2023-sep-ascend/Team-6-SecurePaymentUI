@@ -1,333 +1,591 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import './PaymentPage.css';
+import Loader from './Loader';
 
 function PaymentPage() {
-  const [paymentMethod, setPaymentMethod] = useState('credit_card');
-  const [paymentInfo, setPaymentInfo] = useState({
-    cardNumber: '',
-    cardHolder: '',
-    expirationDate: '',
-    cvv: '',
+  const [state, setState] = useState({
+    walletAmount: 0,
+    totalAmount: 0,
+    paymentMethod: 'credit_card',
+    paymentInfo: {
+      cardNumber: '',
+      cardHolder: '',
+      expirationDate: '',
+      cvv: '',
+    },
+    cashOnDeliveryInfo: {
+      deliveryAddress: '',
+      contactNumber: '',
+    },
+    paymentInProgress: false,
+    accordionActive: 0,
+    otp: '',
+    timer: 60,
+    otpSent: false,
+    resendDisabled: false,
+    generateOtp: true,
+    incorrectOtp: false,
+    otpVerified: false,
+    walletValidationError: '',
+    submitPaymentEnabled: false,
   });
+
   const [cashOnDeliveryInfo, setCashOnDeliveryInfo] = useState({
     deliveryAddress: '',
     contactNumber: '',
   });
-  
 
-  const walletBalance = 500;
-  const [paymentInProgress, setPaymentInProgress] = useState(false);
-  const [accordionActive, setAccordionActive] = useState(null);
-  const [otp, setOtp] = useState('');
-  const [timer, setTimer] = useState(60);
-  const [otpSent, setOtpSent] = useState(false);
-  const [resendDisabled, setResendDisabled] = useState(false);
-  const [generateOtp, setGenerateOtp] = useState(true);
-  const [incorrectOtp, setIncorrectOtp] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false);
-
-  const navigate = useNavigate(); // Initialize useNavigate
+  const [loading, setLoading] = useState(false); 
+  const navigate = useNavigate();
 
   const handlePaymentMethodChange = (method) => {
-    setPaymentMethod(method);
+    console.log(method);
+    setState((prev) => ({ ...prev, paymentMethod: method }));
+    if (method === 'credit_card') {
+      // Display a message for credit card accordion
+      alert('Payment Gateway Down. Sorry for the inconvenience. Meanwhile, try other alternative payment methods.');
+      
+    } else {
+      // Make necessary updates for other payment methods
+    }
   };
 
-  const handlePaymentInfoChange = (e) => {
-    const { name, value } = e.target;
-    setPaymentInfo({
-      ...paymentInfo,
-      [name]: value,
-    });
+  const handleInputChange = (e, category, name) => {
+    const { value } = e.target;
+    setState((prev) => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [name]: value,
+      },
+    }));
   };
 
-  const handleCashOnDeliveryInfoChange = (e) => {
-    const { name, value } = e.target;
-    setCashOnDeliveryInfo({
-      ...cashOnDeliveryInfo,
-      [name]: value,
-    });
-  };
-
-
-  const handleSubmit = () => {
-    setPaymentInProgress(true);
-    console.log(paymentMethod);
-
-    setTimeout(() => {
-      setPaymentInProgress(false);
-
-      if (paymentMethod === 'credit_card') {
-        const { cardNumber, cardHolder, expirationDate, cvv } = paymentInfo;
-      } else if (paymentMethod === 'digital_wallet') {
-        console.log('Wtest1');
-        // Simulate debit from the wallet for demonstration
-        if (otpVerified) {
-          // Debit the wallet amount
-          debitWallet();
+  const handleSubmit = async () => {
+    setState((prev) => ({ ...prev, paymentInProgress: true }));
+  
+    setTimeout(async () => {
+      setState((prev) => ({ ...prev, paymentInProgress: false }));
+  
+      try {
+        setLoading(true);
+  
+        // If payment method is digital_wallet or cash_on_delivery
+        if (
+          (state.paymentMethod === 'digital_wallet' && state.otpVerified) ||
+          state.paymentMethod === 'cash_on_delivery'
+        ) {
+  
+          // Call walletUpdate only if payment method is digital_wallet
+          if (state.paymentMethod === 'digital_wallet') {
+            const response = await fetch('http://localhost:6001/walletUpdate', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                userId: 32421,
+                cartId: 34231234,
+                totalAmount: 500.5,
+              }),
+            });
+  
+            if (!response.ok) {
+              setLoading(false);
+              alert('Problem with wallet update - Please try again');
+              return;
+            }
+          }
+  
+          let modeOfPayment, paymentStatus;
+          if (state.accordionActive === 2) {
+            modeOfPayment = 'Digital Wallet';
+            paymentStatus = 'Paid';
+          } else if (state.accordionActive === 3) {
+            modeOfPayment = 'Cash on Delivery';
+            paymentStatus = 'Pending Payment';
+          }
+  
+          const currentDate = new Date();
+          currentDate.setDate(currentDate.getDate() + 2);
+          const formattedDate = currentDate.toISOString().slice(0, 19).replace('T', ' ');
+  
+          const orderConfirmationResponse = await fetch('http://localhost:6001/orderConfirmation', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              cartId: 34231234,
+              userId: 41231,
+              amount: state.totalAmount,
+              modeOfPayment,
+              paymentStatus,
+              dateOfDelivery: formattedDate,
+            }),
+          });
+  
+          if (orderConfirmationResponse.ok) {
+            setLoading(false);
+            // Redirect to ThankYou page on successful order confirmation
+            const thankYouResponse = await orderConfirmationResponse.json();
+            navigate('/ThankYouPage', {
+              state: {
+                orderConfirmationResponse: thankYouResponse,
+                modeOfPayment,
+                paymentStatus,
+                cashOnDeliveryInfo,
+              },
+            });
+          } else {
+            setLoading(false);
+            // Show a popup to the user with an error message
+            alert('Problem with order confirmation - Please try again');
+          }
+        } else {
+          setLoading(false);
+          alert('Invalid payment method');
         }
-      } else if (paymentMethod === 'cash_on_delivery') {
-        const { deliveryAddress, contactNumber } = cashOnDeliveryInfo;
+      } catch (error) {
+        setLoading(false);
+        console.error('Error during payment:', error);
       }
     }, 1000);
   };
-
-  const debitWallet = () => {
-    // Simulate debiting the wallet amount
-    console.log('Wallet debited successfully.');
-    navigate('/ThankYouPage');
-  };
-
-  // Function to toggle the accordion
-  const toggleAccordion = (index) => {
-    if (accordionActive === index) {
-      // Clicking on the active accordion closes it
-      setAccordionActive(null);
-      // Set the payment method to 'credit_card' when the accordion is closed
-      handlePaymentMethodChange('credit_card');
+  
+  
+  const toggleAccordion = async (index) => {
+    if (state.accordionActive === index) {
+      setState((prev) => ({ ...prev, accordionActive: null }));
     } else {
-      // Clicking on a closed accordion opens it
-      setAccordionActive(index);
-      // Set the payment method based on the index (or other logic)
-      if (index === 1) {
-        handlePaymentMethodChange('credit_card');
-      } else if (index === 2) {
+      setState((prev) => ({ ...prev, accordionActive: index }));
+
+      if (index === 2) {
         handlePaymentMethodChange('digital_wallet');
+        await fetchWalletValidation();
       } else if (index === 3) {
         handlePaymentMethodChange('cash_on_delivery');
+        await fetchShippingDetails();
+      } else if (index === 1) {
+        handlePaymentMethodChange('credit_card');
       }
     }
   };
 
-  // Function to handle OTP input
   const handleOtpChange = (e) => {
     const value = e.target.value;
-    setOtp(value);
+    setState((prev) => ({ ...prev, otp: value }));
   };
 
-  // Function to handle OTP verification
-  const handleVerifyOtp = () => {
-    // Simulate OTP verification for testing purposes
-    if (otp === '1234') {
-      // Correct OTP
-      setOtpVerified(true);
-      setIncorrectOtp(false); // Reset incorrect OTP message
-    } else {
-      // Incorrect OTP
-      setOtpVerified(false);
-      setIncorrectOtp(true);
-    }
-  };
-
-  // Function to handle resending OTP
   const handleResendOtp = () => {
-    // Call the backend service to resend OTP
-    // You can make an API request here to send a new OTP
-    // Update the timer and OTP sent status
-    setTimer(60);
-    setOtpSent(true);
-    setResendDisabled(true);
-    setGenerateOtp(true); // Set to true to display "Generate OTP" button again
-    setIncorrectOtp(false); // Reset incorrect OTP message
+    console.log('Resending OTP...');
+    setState((prev) => ({
+      ...prev,
+      timer: 60,
+      otpSent: true,
+      resendDisabled: true,
+      generateOtp: true,
+      incorrectOtp: false,
+    }));
   };
 
-  // Function to handle generating OTP
-  const handleGenerateOtp = () => {
-    // Call the backend service to generate OTP
-    // You can make an API request here to generate a new OTP
-    // Update the timer and OTP sent status
-    setTimer(60);
-    setOtpSent(true);
-    setResendDisabled(true);
-    setGenerateOtp(false); // Set to false to hide "Generate OTP" button
-    setIncorrectOtp(false); // Reset incorrect OTP message
-  };
-
-  const handleDebitAndRedirect = async () => {
-    // You can make an API call to debit the wallet amount here
+  const handleGenerateOtp = async () => {
     try {
-      // Make an API call to your backend to debit the wallet amount
-      // Example:
-      const response = await fetch('/api/debit-wallet', {
+      setLoading(true);
+      const response = await fetch('http://localhost:6001/authentication', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          // Include any necessary data to perform the debit
+          userId: 32421,
+        }),
+      });
+
+      if (!response.ok) {
+        setLoading(false);
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      } else {
+        setLoading(false);
+      }
+
+      setState((prev) => ({
+        ...prev,
+        otpSent: true,
+        resendDisabled: true,
+        generateOtp: false,
+        incorrectOtp: false,
+        timer: 30, // Reset the timer to 30 seconds
+      }));
+
+      // Start the timer
+      const timerInterval = setInterval(() => {
+        setState((prev) => ({
+          ...prev,
+          timer: Math.max(0, prev.timer - 1),
+        }));
+      }, 1000);
+
+      // Clear the interval when the timer reaches 0
+      setTimeout(() => {
+        clearInterval(timerInterval);
+        setState((prev) => ({
+          ...prev,
+          resendDisabled: false,
+        }));
+      }, state.timer * 1000);
+
+    } catch (error) {
+      setLoading(false);
+      console.error(`Error generating OTP: ${error.message}`);
+    }
+  };
+
+  const handleOtpValidation = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('http://localhost:6001/otpValidation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: 32421, // Use the userId from the authentication request
+          otp: state.otp, // Use the entered OTP
         }),
       });
 
       if (response.ok) {
-        // Debit was successful
-        navigate('/thank-you')// Redirect to the 'Thank You' page
+        setLoading(false);
+        // Handle successful OTP validation
+        console.log('OTP validation successful');
+        console.log(state.otp);
+        setState((prev) => ({ ...prev, submitPaymentEnabled: true, otpVerified: true, incorrectOtp: false }));
       } else {
-        // Handle debit failure, maybe show an error message
-        console.error('Debit failed');
+        setLoading(false);
+        // Handle failed OTP validation
+        console.error('OTP validation failed');
+        setState((prev) => ({ ...prev, submitPaymentEnabled: false, otpVerified: false, incorrectOtp: true }));
       }
     } catch (error) {
-      console.error('Error during debit:', error);
+      setLoading(false);
+      console.error(`Error during OTP validation: ${error.message}`);
+      setState((prev) => ({ ...prev, submitPaymentEnabled: false, otpVerified: false, incorrectOtp: true }));
     }
   };
 
   useEffect(() => {
-    let interval;
-    if (otpSent && timer > 0) {
-      interval = setInterval(() => {
-        setTimer((prevTimer) => prevTimer - 1);
-      }, 1000);
-    } else if (timer === 0) {
-      setResendDisabled(false);
+    console.log('Component rendered and mounted.');
+    const fetchPayableAmount = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://localhost:6001/payableAmount', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            cartId: 34231234,
+            userId: 12345,
+            amount: 500,
+          }),
+        });
+
+        if (!response.ok) {
+          setLoading(false);
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result.walletAmount !== undefined) {
+          setLoading(false);
+          setState((prev) => ({ ...prev, totalAmount: result.totalAmount }));
+        } else {
+          setLoading(false);
+          console.error('Wallet amount not found in the API response');
+        }
+      } catch (error) {
+        setLoading(false);
+        console.error(`Error fetching payable amount: ${error.message}`);
+      }
+    };
+
+    fetchPayableAmount();
+  }, []);
+
+  const fetchWalletValidation = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('http://localhost:6001/walletValidation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: 32421,
+          totalAmount: state.totalAmount,
+        }),
+      });
+
+      if (!response.ok) {
+        setLoading(false);
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.responsecode === '200') {
+        setLoading(false);
+        setState((prev) => ({
+          ...prev,
+          generateOtp: true,
+          walletAmount: result.walletAmount,
+        }));
+      } else if (result.responsecode === '403') {
+        setLoading(false);
+        setState((prev) => ({
+          ...prev,
+          generateOtp: false,
+          walletValidationError: 'Insufficient Wallet Amount, Please use alternative payment method',
+          walletAmount: result.walletAmount,
+        }));
+      } else {
+        setLoading(false);
+        console.error('Unexpected response code:', result.responsecode);
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error(`Error during wallet validation: ${error.message}`);
     }
-    return () => clearInterval(interval);
-  }, [otpSent, timer]);
+  };
+
+  const fetchShippingDetails = async (onShippingDetailsFetched) => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:6001/shippingDetails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: 41231,
+          cartId: 34231234,
+          totalAmount: 500.5,
+        }),
+      });
+
+      if (response.ok) {
+        setLoading(false);
+        const data = await response.json();
+        if (data.responsecode === '200') {
+          const { destinationOfShipping, phone } = data;
+          
+          setState((prev) => ({
+            ...prev,
+            cashOnDeliveryInfo: {
+              ...prev.cashOnDeliveryInfo,
+              deliveryAddress: destinationOfShipping,
+              contactNumber: phone,
+            },
+            submitPaymentEnabled: true,
+            otpVerified: true,
+            
+          }));
+          setCashOnDeliveryInfo({
+            deliveryAddress: data.destinationOfShipping,
+            contactNumber: data.phone,
+          });
+          if (typeof onShippingDetailsFetched === 'function') {
+            onShippingDetailsFetched(cashOnDeliveryInfo);
+          } else {
+            console.error('onShippingDetailsFetched is not a function');
+          }
+        } else {
+          setLoading(false);
+          setState((prev) => ({ ...prev, submitPaymentEnabled: false }));
+          console.error('Error fetching shipping details:', data.message);
+        }
+      } else {
+        setLoading(false);
+        console.error('Error fetching shipping details:', response.statusText);
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error('Error fetching shipping details:', error);
+    }
+  };
+
+  useEffect(() => {
+    let intervalId;
+  
+    if (state.timer > 0) {
+      intervalId = setInterval(() => {
+        setState((prev) => ({
+          ...prev,
+          timer: prev.timer - 1,
+        }));
+      }, 1000);
+    }
+  
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [state.timer]);
 
   return (
     <div className="payment-container">
       <div className="payment-page">
         <h2 className="payment-title">Secure Payment Page</h2>
+        {loading && <Loader />}
 
-        {/* Payment method selection */}
+        <div className="total-payable-amount">
+          <p>Total Payable Amount: ₹ {state.totalAmount}</p>
+        </div>
+
         <div className="payment-methods">
-          {/* Accordion for Credit Card */}
-          <div className={`accordion ${accordionActive === 1 ? 'active' : ''}`}>
-            <div
-              className="accordion-title"
-              onClick={() => toggleAccordion(1)}
-            >
+          <div className={`accordion ${state.accordionActive === 1 ? 'active' : ''}`}>
+            <div className="accordion-title" onClick={() => handlePaymentMethodChange('credit_card')}>
               Credit Card
-              <div className={`accordion-arrow ${accordionActive === 1 ? 'active' : ''}`}></div>
+              <div className={`accordion-arrow ${state.accordionActive === 1 ? 'active' : ''}`}></div>
             </div>
             <div className="accordion-content">
-              {/* Credit card input fields */}
               <input
                 type="text"
                 name="cardNumber"
                 placeholder="Card Number"
-                value={paymentInfo.cardNumber}
-                onChange={handlePaymentInfoChange}
+                value={state.paymentInfo.cardNumber}
+                onChange={(e) => handleInputChange(e, 'paymentInfo', 'cardNumber')}
               />
               <input
                 type="text"
                 name="cardHolder"
                 placeholder="Card Holder Name"
-                value={paymentInfo.cardHolder}
-                onChange={handlePaymentInfoChange}
+                value={state.paymentInfo.cardHolder}
+                onChange={(e) => handleInputChange(e, 'paymentInfo', 'cardHolder')}
               />
               <input
                 type="text"
                 name="expirationDate"
                 placeholder="Expiration Date (MM/YY)"
-                value={paymentInfo.expirationDate}
-                onChange={handlePaymentInfoChange}
+                value={state.paymentInfo.expirationDate}
+                onChange={(e) => handleInputChange(e, 'paymentInfo', 'expirationDate')}
               />
               <input
                 type="text"
                 name="cvv"
                 placeholder="CVV"
-                value={paymentInfo.cvv}
-                onChange={handlePaymentInfoChange}
+                value={state.paymentInfo.cvv}
+                onChange={(e) => handleInputChange(e, 'paymentInfo', 'cvv')}
               />
             </div>
           </div>
 
-          {/* Accordion for Digital Wallet */}
-          <div className={`accordion ${accordionActive === 2 ? 'active' : ''}`}>
+          <div className={`accordion ${state.accordionActive === 2 ? 'active' : ''}`}>
             <div
               className="accordion-title"
-              onClick={() => toggleAccordion(2)}
+              onClick={() => {
+                toggleAccordion(2);
+                handlePaymentMethodChange('digital_wallet');
+              }}
             >
               Digital Wallet
-              <div className={`accordion-arrow ${accordionActive === 2 ? 'active' : ''}`}></div>
+              <div className={`accordion-arrow ${state.accordionActive === 2 ? 'active' : ''}`}></div>
             </div>
             <div className="accordion-content">
-              <div className="digital-wallet-info">
-                {/* Digital Wallet balance display */}
-                <p>Your wallet balance: ${walletBalance}</p>
-                {otpSent ? (
-                  <>
-                    {/* OTP input field */}
-                    <input
-                      type="text"
-                      name="otp"
-                      placeholder="Enter OTP"
-                      value={otp}
-                      onChange={handleOtpChange}
-                    />
-                    <button onClick={handleVerifyOtp}>Verify OTP</button>
-                    {incorrectOtp ? (
-                      <>
-                        <p style={{ color: 'red' }}>Incorrect OTP</p>
-                        {timer > 0 ? (
-                          <p>Resend OTP in {timer} seconds</p>
-                        ) : (
-                          <button onClick={handleResendOtp} disabled={resendDisabled}>
-                            Resend OTP
-                          </button>
-                        )}
-                      </>
-                    ) : (
-                      otpVerified ? (
-                        <div>
-                          {/* OTP verified, hide Resend OTP and Generate OTP */}
-                        </div>
-                      ) : (
-                        <div>
-                          {timer > 0 ? (
-                            <p>Resend OTP in {timer} seconds</p>
+            <div className="digital-wallet-info">
+                {state.walletValidationError && <p style={{ color: 'red' }}>{state.walletValidationError}</p>}
+                <p>Your wallet balance: ₹ {state.walletAmount}</p>
+
+                {state.otpSent ? (
+                  state.otpVerified ? (
+                    <div>
+                      <p>Successfully Authenticated</p>
+                      <p>Submit Payment to confirm your order</p>
+                    </div>
+                  ) : (
+                    <>
+                      <input
+                        type="text"
+                        name="otp"
+                        placeholder="Enter OTP"
+                        value={state.otp}
+                        onChange={handleOtpChange}
+                        className="otp-input"
+                      />
+                      <button onClick={handleOtpValidation} className="otp-validation-button">
+                        Verify OTP
+                      </button>
+                      {state.incorrectOtp ? (
+                        <>
+                          <p style={{ color: 'red' }}>Incorrect OTP</p>
+                          {state.timer > 0 ? (
+                            <p>Resend OTP in {state.timer} seconds</p>
                           ) : (
-                            <button onClick={handleGenerateOtp}>Generate OTP</button>
+                            <button onClick={handleResendOtp} disabled={state.resendDisabled} className="otp-resend-button">
+                              Resend OTP
+                            </button>
                           )}
-                        </div>
-                      )
-                    )}
-                  </>
+                        </>
+                      ) : (
+                        state.timer > 0 ? (
+                          <p>Resend OTP in {state.timer} seconds</p>
+                        ) : (
+                          <button onClick={handleGenerateOtp} className="otp-resend-button">
+                            Generate OTP
+                          </button>
+                        )
+                      )}
+                    </>
+                  )
                 ) : (
                   <>
-                    {generateOtp && (
-                      <button onClick={handleGenerateOtp}>Generate OTP</button>
+                    {state.generateOtp && (
+                      <button onClick={handleGenerateOtp} className="otp-resend-button">
+                        Generate OTP
+                      </button>
                     )}
                   </>
                 )}
               </div>
-            </div>
+
+  </div>
           </div>
 
-          {/* Accordion for Cash on Delivery */}
-          <div className={`accordion ${accordionActive === 3 ? 'active' : ''}`}>
+          <div className={`accordion ${state.accordionActive === 3 ? 'active' : ''}`}>
             <div
               className="accordion-title"
-              onClick={() => toggleAccordion(3)} 
+              onClick={() => toggleAccordion(3)}
             >
               Cash on Delivery
-              <div className={`accordion-arrow ${accordionActive === 3 ? 'active' : ''}`}></div>
+              <div className={`accordion-arrow ${state.accordionActive === 3 ? 'active' : ''}`}></div>
             </div>
             <div className="accordion-content">
-              {/* Cash on delivery input fields */}
               <input
                 type="text"
                 name="deliveryAddress"
                 placeholder="Delivery Address"
-                value={cashOnDeliveryInfo.deliveryAddress}
-                onChange={handleCashOnDeliveryInfoChange}
+                value={state.cashOnDeliveryInfo.deliveryAddress}
+                onChange={(e) => handleInputChange(e, 'cashOnDeliveryInfo', 'deliveryAddress')}
               />
               <input
                 type="text"
                 name="contactNumber"
                 placeholder="Contact Number"
-                value={cashOnDeliveryInfo.contactNumber}
-                onChange={handleCashOnDeliveryInfoChange}
+                value={state.cashOnDeliveryInfo.contactNumber}
+                onChange={(e) => handleInputChange(e, 'cashOnDeliveryInfo', 'contactNumber')}
               />
             </div>
           </div>
         </div>
 
-        {/* Submit Payment button */}
-        <button onClick={handleSubmit} disabled={!otpVerified}>Submit Payment</button>
+        <button onClick={handleSubmit} disabled={!state.otpVerified || !state.submitPaymentEnabled}>
+          Submit Payment
+        </button>
       </div>
 
-      {/* Payment in progress overlay */}
-      {paymentInProgress && (
+      {state.paymentInProgress && (
         <div className="overlay">
           <div className="loader"></div>
         </div>

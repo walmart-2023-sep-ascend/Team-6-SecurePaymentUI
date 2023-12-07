@@ -18,7 +18,9 @@
 
   .feedback-form h2 {
     font-size: 20px;
-    margin-bottom: 20px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    margin-bottom: 30px;
+    text-align: center;
   }
   
   .question {
@@ -26,12 +28,13 @@
   }
   
   .question p {
-    font-size: 12px;
+    font-size: 15px;
     position: relative;
   }
   
   .star-ratings {
     margin-top: 10px;
+    padding-left: 20px;
   
     .star {
       color: #ddd;
@@ -39,7 +42,7 @@
       font-size: 20px;
   
       &.selected {
-        color: #f6b93b; /* Highlighted star color */
+        color: #08fb00; /* Highlighted star color */
       }
     }
   }
@@ -65,16 +68,24 @@
   /* User Comments */
     .user-comments {
         margin-top: 20px;
-        font-size: 12px;
+        font-size: 15px;
         padding-bottom: 5px; /* Add some spacing between questions and comments */
     }
   
     .user-comments textarea {
       width: 100%; /* Make the textarea responsive by using 100% width */
       padding: 10px;
-      font-size: 10px; /* Reduce the font size by 2 points */
+      font-size: 15px; /* Reduce the font size by 2 points */
       max-width: 100%; /* Ensure the textarea doesn't exceed its parent's width */
       box-sizing: border-box; /* Include padding and borders in the element's total width */
     }
- 
+
+.feedback-container{
+  margin-top: 30px;
+  min-height: 85vh;
+  width: 75%
+}
+
+
+
   
