@@ -2,8 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './PaymentPage.css';
 import Loader from './Loader';
+import { useParams } from 'react-router-dom';
+import Modal from 'react-modal';
 
 function PaymentPage() {
+
+  const [showModal, setShowModal] = useState(false);
+  const [modalContent, setModalContent] = useState('');
+
+  const { userID, cartID } = useParams();
   const [state, setState] = useState({
     walletAmount: 0,
     totalAmount: 0,
@@ -36,6 +43,15 @@ function PaymentPage() {
     contactNumber: '',
   });
 
+  const showAlert = (content) => {
+    setModalContent(content);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+  };
+
   const [loading, setLoading] = useState(false); 
   const navigate = useNavigate();
 
@@ -44,10 +60,10 @@ function PaymentPage() {
     setState((prev) => ({ ...prev, paymentMethod: method }));
     if (method === 'credit_card') {
       // Display a message for credit card accordion
-      alert('Payment Gateway Down. Sorry for the inconvenience. Meanwhile, try other alternative payment methods.');
+      showAlert('Credit Card Payment gateway is not available at the moment - Please try other atlernative payment methods');
       
     } else {
-      // Make necessary updates for other payment methods
+      
     }
   };
 
@@ -85,15 +101,15 @@ function PaymentPage() {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                userId: 32421,
-                cartId: 34231234,
+                userId: userID,
+                cartId: cartID,
                 totalAmount: 500.5,
               }),
             });
   
             if (!response.ok) {
               setLoading(false);
-              alert('Problem with wallet update - Please try again');
+              showAlert('Problem with wallet update - Please try again');
               return;
             }
           }
@@ -117,8 +133,8 @@ function PaymentPage() {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              cartId: 34231234,
-              userId: 41231,
+              cartId: cartID,
+              userId: userID,
               amount: state.totalAmount,
               modeOfPayment,
               paymentStatus,
@@ -141,11 +157,11 @@ function PaymentPage() {
           } else {
             setLoading(false);
             // Show a popup to the user with an error message
-            alert('Problem with order confirmation - Please try again');
+            showAlert('Problem with order confirmation - Please try again');
           }
         } else {
           setLoading(false);
-          alert('Invalid payment method');
+          showAlert('Invalid payment method');
         }
       } catch (error) {
         setLoading(false);
@@ -199,7 +215,7 @@ function PaymentPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: 32421,
+          userId: userID,
         }),
       });
 
@@ -251,7 +267,7 @@ function PaymentPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: 32421, // Use the userId from the authentication request
+          userId: userID, // Use the userId from the authentication request
           otp: state.otp, // Use the entered OTP
         }),
       });
@@ -286,8 +302,8 @@ function PaymentPage() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            cartId: 34231234,
-            userId: 12345,
+            cartId: cartID,
+            userId: userID,
             amount: 500,
           }),
         });
@@ -324,7 +340,7 @@ function PaymentPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: 32421,
+          userId: userID,
           totalAmount: state.totalAmount,
         }),
       });
@@ -370,8 +386,8 @@ function PaymentPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: 41231,
-          cartId: 34231234,
+          userId: userID,
+          cartId: cartID,
           totalAmount: 500.5,
         }),
       });
@@ -590,6 +606,19 @@ function PaymentPage() {
           <div className="loader"></div>
         </div>
       )}
+
+      <Modal
+        isOpen={showModal}
+        onRequestClose={closeModal}
+        contentLabel="Custom Alert"
+        className="custom-modal"
+        overlayClassName="custom-modal-overlay"
+      >
+        <div>
+          <p>{modalContent}</p>
+          <button onClick={closeModal}>Close</button>
+        </div>
+      </Modal>
     </div>
   );
 }

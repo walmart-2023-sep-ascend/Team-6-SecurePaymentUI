@@ -8,18 +8,28 @@ import Footer from './Footer';
 import { Routes, Route } from 'react-router-dom';
 import FeedBackThank from './FeedBackThank';
 import ReviewForm from './ReviewForm';
+import AdminPage from './AdminPage';
+import { Helmet } from 'react-helmet';
+import SignIn from './SignIn';
+
 
 function App() {
   return (
     <div className="App">
+      <Helmet>
+        <title>WalECart Online</title>
+        <link rel="icon" type="image/png" href="public/logo.png"/>
+      </Helmet>
     <Header />
       <div className="payment-container">
       <Routes>
-        <Route path="/PaymentPage" element={<PaymentPage />} />
+        <Route path="/PaymentPage/:userID/:cartID" element={<PaymentPage />} />
         <Route path="/ThankYouPage" element={<ThankYouPage />} />
         <Route path="/FeedbackForm/:userID/:cartID" element={<FeedbackForm />} />
         <Route path="/FeedBackThank" element={<FeedBackThank /> } />
-        <Route path="/ReviewForm" element={<ReviewForm /> } />
+        <Route path="/ReviewForm/:userId/:productId" element={<ReviewForm /> } />
+        <Route path="/AdminPage" element={<AdminPage />} />
+        <Route path="/SignIn" element={<SignIn />} />
       </Routes>
       </div>
     <Footer />

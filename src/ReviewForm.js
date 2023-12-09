@@ -2,23 +2,25 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './ReviewForm.css'; // Include your existing CSS
+import './ReviewForm.css'; 
+import { useParams, useNavigate } from 'react-router-dom';
 
-const ReviewForm = ({ onReviewSubmit }) => {
+const ReviewForm = () => {
+  const navigate = useNavigate();
+  const { userId, productId } = useParams();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [productDetails, setProductDetails] = useState(null);
 
   useEffect(() => {
-    // Fetch product details when the component mounts
     fetchProductDetails();
-  }, []);
+  }, [productId]);
 
   const fetchProductDetails = async () => {
     try {
-      const response = await axios.get('http://localhost:8990/api/product/reviewSearchId/44');
+      const response = await axios.get(`http://localhost:8990/api/product/reviewSearchId/${productId}`);
       console.log('Product details response:', response.data);
-  
+
       if (Array.isArray(response.data) && response.data.length > 0) {
         setProductDetails(response.data[0]);
       } else {
@@ -38,57 +40,79 @@ const ReviewForm = ({ onReviewSubmit }) => {
     setComment(event.target.value);
   };
 
-  const handleSubmit = () => {
-    // You can perform validation here if needed
+  const handleSubmit = async () => {
+    const requestBody = {
+      comments: [
+        {
+          user: {
+            userId: userId,
+            comment: comment,
+            rate: rating,
+          },
+        },
+      ],
+    };
 
-    // Call the onReviewSubmit function from the parent component
-    onReviewSubmit({ rating, comment });
+    try {
+      const response = await axios.post(`http://localhost:8990/api/approval/${productId}/comment`, requestBody, {
+        headers: {
+          'Content-Type': 'application/json',
+          'user-id-email': 'lingaraj.m.k@walmart.com', 
+        },
+      });
 
-    // Reset the form
-    setRating(0);
-    setComment('');
+      console.log('API Response:', response.data);
+      console.log('Review submitted:', { rating, comment });
+      setRating(0);
+      setComment('');
+      navigate('/FeedBackThank');
+    } catch (error) {
+      console.error('Error submitting review:', error);
+    }
   };
 
   return (
-    <div>
-      {productDetails ? (
-        <div className="product-details-container">
-          <img src={productDetails.iconUrl} alt={productDetails.title} className="product-image" />
-          <div className="product-info">
-            <h2>{productDetails.title}</h2>
-            <p className="product-name">{productDetails.productName}</p>
-            <p className="short-description">{productDetails.shortDescription}</p>
-            <p className="long-description">{productDetails.longDescription}</p>
-          </div>
+    <div className="review-form-container">
+        <div className="review-form">
+            {productDetails ? (
+                <div className="product-details-container">
+                    <img src={productDetails.iconUrl} alt={productDetails.title} className="product-image" />
+                    <div className="product-info">
+                        <h2>{productDetails.title}</h2>
+                        <p className="product-name">{productDetails.productName}</p>
+                        <p className="short-description">{productDetails.shortDescription}</p>
+                        <p className="long-description">{productDetails.longDescription}</p>
+                    </div>
+                </div>
+            ) : (
+                <div>Loading product details...</div>
+            )}
+
+            <h2>Add Review</h2>
+            <div className="star-ratings">
+                {[1, 2, 3, 4, 5].map((index) => (
+                    <span
+                        key={index}
+                        className={`star ${rating >= index ? 'selected' : ''}`}
+                        onClick={() => handleRatingChange(index)}
+                    >
+                        ★
+                    </span>
+                ))}
+            </div>
+
+            <br />
+            <label className="review-form-label">
+                Comment <br />
+                <textarea className="review-form-textarea" value={comment} onChange={handleCommentChange} />
+            </label>
+            <br />
+            <button className="submit-button" onClick={handleSubmit}>
+                Submit Review
+            </button>
         </div>
-      ) : (
-        <div>Loading product details...</div>
-      )}
-
-      <h2>Add Review</h2>
-      <div className="star-ratings">
-        {[1, 2, 3, 4, 5].map((index) => (
-          <span
-            key={index}
-            className={`star ${rating >= index ? 'selected' : ''}`}
-            onClick={() => handleRatingChange(index)}
-          >
-            ★
-          </span>
-        ))}
-      </div>
-
-      <br />
-      <label className="review-form-label">
-        Comment <br/>
-        <textarea className="review-form-textarea" value={comment} onChange={handleCommentChange} />
-      </label>
-      <br />
-      <button className="submit-button" onClick={handleSubmit}>
-        Submit Review
-      </button>
     </div>
-  );
+);
 };
 
 export default ReviewForm;
