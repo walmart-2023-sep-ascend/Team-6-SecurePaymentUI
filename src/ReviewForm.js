@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './ReviewForm.css'; 
+import './ReviewForm.css';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const ReviewForm = () => {
@@ -10,7 +10,10 @@ const ReviewForm = () => {
   const { userId, productId } = useParams();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
+  const [email, setEmail] = useState('');
   const [productDetails, setProductDetails] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
 
   useEffect(() => {
     fetchProductDetails();
@@ -24,7 +27,6 @@ const ReviewForm = () => {
       if (Array.isArray(response.data) && response.data.length > 0) {
         setProductDetails(response.data[0]);
       } else {
-        // Handle the case where the response is not as expected
         console.error('Invalid product details response:', response.data);
       }
     } catch (error) {
@@ -40,7 +42,22 @@ const ReviewForm = () => {
     setComment(event.target.value);
   };
 
+  const handleEmailChange = (event) => {
+    const inputEmail = event.target.value;
+    setEmail(inputEmail);
+
+    // Email validation
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    setEmailError(emailPattern.test(inputEmail) ? '' : '         Invalid email address');
+  };
+
   const handleSubmit = async () => {
+    if (emailError) {
+      return;
+    }
+
+    setLoading(true);
+
     const requestBody = {
       comments: [
         {
@@ -57,62 +74,85 @@ const ReviewForm = () => {
       const response = await axios.post(`http://localhost:8990/api/approval/${productId}/comment`, requestBody, {
         headers: {
           'Content-Type': 'application/json',
-          'user-id-email': 'lingaraj.m.k@walmart.com', 
+          'user-id-email': email,
         },
       });
 
       console.log('API Response:', response.data);
-      console.log('Review submitted:', { rating, comment });
+      console.log('Review submitted:', { rating, comment, email });
       setRating(0);
       setComment('');
       navigate('/FeedBackThank');
     } catch (error) {
       console.error('Error submitting review:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="review-form-container">
-        <div className="review-form">
-            {productDetails ? (
-                <div className="product-details-container">
-                    <img src={productDetails.iconUrl} alt={productDetails.title} className="product-image" />
-                    <div className="product-info">
-                        <h2>{productDetails.title}</h2>
-                        <p className="product-name">{productDetails.productName}</p>
-                        <p className="short-description">{productDetails.shortDescription}</p>
-                        <p className="long-description">{productDetails.longDescription}</p>
-                    </div>
-                </div>
-            ) : (
-                <div>Loading product details...</div>
-            )}
-
-            <h2>Add Review</h2>
-            <div className="star-ratings">
-                {[1, 2, 3, 4, 5].map((index) => (
-                    <span
-                        key={index}
-                        className={`star ${rating >= index ? 'selected' : ''}`}
-                        onClick={() => handleRatingChange(index)}
-                    >
-                        ★
-                    </span>
-                ))}
+      <div className="review-form">
+        {productDetails ? (
+          <div className="product-details-container">
+            <img src={productDetails.iconUrl} alt={productDetails.title} className="product-image" />
+            <div className="product-info">
+              <h2>{productDetails.title}</h2>
+              <p className="product-name">{productDetails.productName}</p>
+              <p className="short-description">{productDetails.shortDescription}</p>
+              <p className="long-description">{productDetails.longDescription}</p>
             </div>
+          </div>
+        ) : (
+          <div>Loading product details...</div>
+        )}
 
-            <br />
-            <label className="review-form-label">
-                Comment <br />
-                <textarea className="review-form-textarea" value={comment} onChange={handleCommentChange} />
-            </label>
-            <br />
-            <button className="submit-button" onClick={handleSubmit}>
-                Submit Review
-            </button>
+        <h1>Add Review</h1>
+        <div className="star-ratings">
+          {[1, 2, 3, 4, 5].map((index) => (
+            <span
+              key={index}
+              className={`star ${rating >= index ? 'selected' : ''}`}
+              onClick={() => handleRatingChange(index)}
+            >
+              ★
+            </span>
+          ))}
         </div>
+
+        <br />
+        <label className="review-form-label">
+          Email <br />
+          <div className="email-input-container">
+            <input
+              type="email"
+              className={`review-form-input ${emailError ? 'error' : ''}`}
+              value={email}
+              onChange={handleEmailChange}
+            />
+            
+          </div>
+          <div>{emailError && <span className="error-message">{emailError}</span>}</div>
+        </label>
+
+        <br />
+        <label className="review-form-label">
+          Comment <br />
+          <textarea className="review-form-textarea" value={comment} onChange={handleCommentChange} />
+        </label>
+        <br />
+        <button className="submit-button" onClick={handleSubmit} disabled={loading}>
+          {loading ? 'Submitting...' : 'Submit Review'}
+        </button>
+      </div>
+
+      {loading && (
+        <div className="overlay">
+          <div className="loader"></div>
+        </div>
+      )}
     </div>
-);
+  );
 };
 
 export default ReviewForm;

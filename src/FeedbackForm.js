@@ -80,7 +80,7 @@ function FeedbackForm() {
         try {
           setLoading(true);
           // Send the feedback data to your backend using an API endpoint
-          const response = await axios.post('http://localhost:9504/addresponse', feedbackData);
+          const response = await axios.post('http://localhost:6005/addresponse', feedbackData);
 
           if (response.status === 201) {
             setLoading(false);

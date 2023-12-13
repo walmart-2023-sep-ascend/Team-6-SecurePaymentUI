@@ -1,61 +1,61 @@
 /* AdminPage.css */
 
 .admin-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Two columns with equal width */
-    grid-gap: 20px; /* Spacing between items */
-    margin-bottom: 30px;
-  }
-  
-  .review-container {
-    border: 1px solid #ccc;
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    background-color: white;
-  }
-  
-  .review-details {
-    flex-grow: 1;
-  }
-  
-  .comments-container {
-    margin-top: 10px;
-  }
-  
-  .comment-container {
-    margin-bottom: 10px;
-  }
-  
-  .button-container {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-  }
-  
-  .button-container button {
-    padding: 8px 16px;
-    cursor: pointer;
-    font-size: 14px;
-  }
-  
-  .button-container button.approve {
-    background-color: #4caf50;
-    color: #fff;
-    border: none;
-  }
-  
-  .button-container button.reject {
-    background-color: #f44336;
-    color: #fff;
-    border: none;
-  }
-
-  .review-image {
-    width: 150px; /* Ensure the image takes up the full width of the container */
-    height: 150px; /* Set the desired height */
-    object-fit: cover; /* Maintain the image's aspect ratio and cover the container */
+  max-width: 1000px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Adjusted grid layout for responsiveness */
+  grid-gap: 20px; /* Reduced spacing between items */
+  margin-bottom: 30px;
 }
-  
+
+.review-container {
+  border: 1px solid #ccc;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+}
+
+.review-details {
+  flex-grow: 1;
+}
+
+.comments-container {
+  margin-top: 10px;
+}
+
+.comment-container {
+  margin-bottom: 10px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.button-container button {
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* Adjusted button styling for better visibility */
+.button-container button.approve {
+  background-color: #4caf50;
+  color: #fff;
+  border: none;
+}
+
+.button-container button.reject {
+  background-color: #f44336;
+  color: #fff;
+  border: none;
+}
+
+.review-image {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+}

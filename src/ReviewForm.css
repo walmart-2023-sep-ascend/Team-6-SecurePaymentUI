@@ -29,6 +29,13 @@
     color: #333;
   }
 
+   h1 {
+    font-size: 24px;
+    font-family: 'Verdana', Geneva, Tahoma, sans-serif;
+    margin-bottom: 10px;
+    color: #1B74CE;
+  }
+
   .product-info p {
     font-size: 16px;
     color: #555;
@@ -39,10 +46,11 @@
   }
 
   .star-ratings .star {
-    color: #ddd;
+    color: #a5a4a4;
     cursor: pointer;
     font-size: 24px;
     transition: color 0.3s ease-in-out;
+    margin-right: 20px;
   }
 
   .star-ratings .star.selected {
@@ -58,6 +66,7 @@
     font-size: 18px;
     margin-top: 20px;
     color: #333;
+    position: relative; /* Added position relative */
   }
 
   .review-form-textarea {
@@ -87,3 +96,19 @@
     min-height: 90vh;
   }
 
+  .review-form-input {
+    width: 50%;
+    padding: 10px; /* Adjust the padding as needed */
+    font-size: 14px; /* Adjust the font size as needed */
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+
+  .error-message {
+    color: #e74c3c; /* Red color for error message */
+    font-size: 14px;
+    align-content: center;
+    bottom: -20px; /* Position the error message below the input */
+    left: 0;
+  }

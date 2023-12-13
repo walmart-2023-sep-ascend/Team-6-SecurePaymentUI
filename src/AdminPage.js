@@ -36,15 +36,64 @@ const AdminPage = () => {
     }
   };
 
-  const handleApprove = (productId) => {
-    // Implement approval logic here
-    console.log(`Review for product ${productId} approved.`);
-  };
+  const handleApprove = async (productId, userId, email, comment, rating) => {
+    try {
+      console.log(productId, userId, email, comment, rating);
+      const response = await axios.post(
+        `http://customerrating.eastus.cloudapp.azure.com:9801/api/product/${productId}/comments`,
+        {
+          user: {
+            userId: userId,
+            comment: comment,
+            rate: rating,
+          },
+        },
+        {
+          headers: {
+            'user-id-email': email, 
+            'approval-status': 'approved', 
+            'Content-Type': 'application/json', 
+          },
+        }
+      );
+  
+      console.log('Review approved successfully:', response.data);
+      const deleteResponse = await axios.delete(
+        `http://customerrating.eastus.cloudapp.azure.com:9801/api/approval/delete/${productId}/${userId}`
+      );
+      console.log('Deletion of approval record successful:', deleteResponse.data);
 
-  const handleReject = (productId) => {
-    // Implement rejection logic here
-    console.log(`Review for product ${productId} rejected.`);
+      window.location.reload();
+  
+    } catch (error) {
+      console.error('Error approving review:', error);
+    }
   };
+  
+
+  const handleReject = async (productId, userId, email) => {
+    try {
+
+      const response = await axios.delete(
+        `http://customerrating.eastus.cloudapp.azure.com:9801/api/approval/delete/${productId}/${userId}`,
+        {
+          headers: {
+            'user-id-email': email,
+            'approval-status': 'reject',
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log('Review rejected successfully:', response.data);
+
+      window.location.reload();
+  
+    } catch (error) {
+      console.error('Error rejecting review:', error);
+    }
+  };
+  
 
   return (
     <div>
@@ -65,17 +114,34 @@ const AdminPage = () => {
                 <p>User ID: {comment.user.userId}</p>
                 <p>Comment: {comment.user.comment}</p>
                 <p>Rating: {comment.user.rate}</p>
+                <div className="button-container">
+                <button
+                    className="approve"
+                    onClick={() =>
+                      handleApprove(
+                        review.productId,
+                        comment.user.userId,
+                        review.mail,
+                        comment.user.comment,
+                        comment.user.rate
+                      )
+                    }
+                  >
+                    Approve
+                  </button>
+                  <button
+                    className="reject"
+                    onClick={() =>
+                      handleReject(review.productId, comment.user.userId, review.mail)
+                    }
+                  >
+                    Reject
+                  </button>
+                  </div>
               </div>
             ))}
           </div>
-          <div className="button-container">
-            <button className="approve" onClick={() => handleApprove(review.productId)}>
-              Approve
-            </button>
-            <button className="reject" onClick={() => handleReject(review.productId)}>
-              Reject
-            </button>
-          </div>
+          
         </div>
       ))}
     </div>
