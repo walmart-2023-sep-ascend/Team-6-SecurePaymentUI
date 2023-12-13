@@ -23,7 +23,7 @@ function App() {
     <Header />
       <div className="payment-container">
       <Routes>
-        <Route path="/PaymentPage/:userID/:cartID" element={<PaymentPage />} />
+        <Route path="/PaymentPage/:userID/:cartID/:amount" element={<PaymentPage />} />
         <Route path="/ThankYouPage" element={<ThankYouPage />} />
         <Route path="/FeedbackForm/:userID/:cartID" element={<FeedbackForm />} />
         <Route path="/FeedBackThank" element={<FeedBackThank /> } />

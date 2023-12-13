@@ -10,7 +10,7 @@ function PaymentPage() {
   const [showModal, setShowModal] = useState(false);
   const [modalContent, setModalContent] = useState('');
 
-  const { userID, cartID } = useParams();
+  const { userID, cartID, amount } = useParams();
   const [state, setState] = useState({
     walletAmount: 0,
     totalAmount: 0,
@@ -95,7 +95,7 @@ function PaymentPage() {
   
           // Call walletUpdate only if payment method is digital_wallet
           if (state.paymentMethod === 'digital_wallet') {
-            const response = await fetch('http://localhost:6001/walletUpdate', {
+            const response = await fetch('http://localhost:9500/walletUpdate', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -103,7 +103,7 @@ function PaymentPage() {
               body: JSON.stringify({
                 userId: userID,
                 cartId: cartID,
-                totalAmount: 500.5,
+                totalAmount: amount,
               }),
             });
   
@@ -127,7 +127,7 @@ function PaymentPage() {
           currentDate.setDate(currentDate.getDate() + 2);
           const formattedDate = currentDate.toISOString().slice(0, 19).replace('T', ' ');
   
-          const orderConfirmationResponse = await fetch('http://localhost:6001/orderConfirmation', {
+          const orderConfirmationResponse = await fetch('http://localhost:9500/orderConfirmation', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -209,7 +209,7 @@ function PaymentPage() {
   const handleGenerateOtp = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:6001/authentication', {
+      const response = await fetch('http://localhost:9500/authentication', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -261,7 +261,7 @@ function PaymentPage() {
   const handleOtpValidation = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:6001/otpValidation', {
+      const response = await fetch('http://localhost:9500/otpValidation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -271,8 +271,10 @@ function PaymentPage() {
           otp: state.otp, // Use the entered OTP
         }),
       });
+      
+      const result = await response.json();
 
-      if (response.ok) {
+      if (result.responsecode === '200') {
         setLoading(false);
         // Handle successful OTP validation
         console.log('OTP validation successful');
@@ -296,7 +298,7 @@ function PaymentPage() {
     const fetchPayableAmount = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:6001/payableAmount', {
+        const response = await fetch('http://localhost:9500/payableAmount', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -304,7 +306,7 @@ function PaymentPage() {
           body: JSON.stringify({
             cartId: cartID,
             userId: userID,
-            amount: 500,
+            amount: amount,
           }),
         });
 
@@ -334,7 +336,7 @@ function PaymentPage() {
   const fetchWalletValidation = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:6001/walletValidation', {
+      const response = await fetch('http://localhost:9500/walletValidation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -380,7 +382,7 @@ function PaymentPage() {
   const fetchShippingDetails = async (onShippingDetailsFetched) => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:6001/shippingDetails', {
+      const response = await fetch('http://localhost:9500/shippingDetails', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -388,7 +390,7 @@ function PaymentPage() {
         body: JSON.stringify({
           userId: userID,
           cartId: cartID,
-          totalAmount: 500.5,
+          totalAmount: amount,
         }),
       });
 
@@ -457,7 +459,7 @@ function PaymentPage() {
         {loading && <Loader />}
 
         <div className="total-payable-amount">
-          <p>Total Payable Amount: ₹ {state.totalAmount}</p>
+          <p>Total Payable Amount: $ {state.totalAmount}</p>
         </div>
 
         <div className="payment-methods">
@@ -512,7 +514,7 @@ function PaymentPage() {
             <div className="accordion-content">
             <div className="digital-wallet-info">
                 {state.walletValidationError && <p style={{ color: 'red' }}>{state.walletValidationError}</p>}
-                <p>Your wallet balance: ₹ {state.walletAmount}</p>
+                <p>Your wallet balance: $ {state.walletAmount}</p>
 
                 {state.otpSent ? (
                   state.otpVerified ? (
@@ -584,6 +586,7 @@ function PaymentPage() {
                 placeholder="Delivery Address"
                 value={state.cashOnDeliveryInfo.deliveryAddress}
                 onChange={(e) => handleInputChange(e, 'cashOnDeliveryInfo', 'deliveryAddress')}
+                disabled={true} 
               />
               <input
                 type="text"
@@ -591,6 +594,7 @@ function PaymentPage() {
                 placeholder="Contact Number"
                 value={state.cashOnDeliveryInfo.contactNumber}
                 onChange={(e) => handleInputChange(e, 'cashOnDeliveryInfo', 'contactNumber')}
+                disabled={true} 
               />
             </div>
           </div>
