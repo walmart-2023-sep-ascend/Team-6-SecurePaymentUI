@@ -95,7 +95,7 @@ function PaymentPage() {
   
           // Call walletUpdate only if payment method is digital_wallet
           if (state.paymentMethod === 'digital_wallet') {
-            const response = await fetch('http://localhost:6001/walletUpdate', {
+            const response = await fetch('http://localhost:9500/walletUpdate', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -127,7 +127,7 @@ function PaymentPage() {
           currentDate.setDate(currentDate.getDate() + 2);
           const formattedDate = currentDate.toISOString().slice(0, 19).replace('T', ' ');
   
-          const orderConfirmationResponse = await fetch('http://localhost:6001/orderConfirmation', {
+          const orderConfirmationResponse = await fetch('http://localhost:9500/orderConfirmation', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -209,7 +209,7 @@ function PaymentPage() {
   const handleGenerateOtp = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:6001/authentication', {
+      const response = await fetch('http://localhost:9500/authentication', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -261,7 +261,7 @@ function PaymentPage() {
   const handleOtpValidation = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:6001/otpValidation', {
+      const response = await fetch('http://localhost:9500/otpValidation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -298,7 +298,7 @@ function PaymentPage() {
     const fetchPayableAmount = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:6001/payableAmount', {
+        const response = await fetch('http://localhost:9500/payableAmount', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -336,7 +336,7 @@ function PaymentPage() {
   const fetchWalletValidation = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:6001/walletValidation', {
+      const response = await fetch('http://localhost:9500/walletValidation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -382,7 +382,7 @@ function PaymentPage() {
   const fetchShippingDetails = async (onShippingDetailsFetched) => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:6001/shippingDetails', {
+      const response = await fetch('http://localhost:9500/shippingDetails', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

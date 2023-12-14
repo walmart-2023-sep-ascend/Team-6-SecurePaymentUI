@@ -21,7 +21,7 @@ const ReviewForm = () => {
 
   const fetchProductDetails = async () => {
     try {
-      const response = await axios.get(`http://localhost:8989/api/product/reviewSearchId/${productId}`);
+      const response = await axios.get(`http://customerrating.eastus.cloudapp.azure.com:9801/api/product/reviewSearchId/${productId}`);
       console.log('Product details response:', response.data);
 
       if (Array.isArray(response.data) && response.data.length > 0) {
@@ -70,7 +70,7 @@ const ReviewForm = () => {
     };
 
     try {
-      const response = await axios.post(`http://localhost:8989/api/approval/${productId}/comment`, requestBody, {
+      const response = await axios.post(`http://customerrating.eastus.cloudapp.azure.com:9801/api/approval/${productId}/comment`, requestBody, {
         headers: {
           'Content-Type': 'application/json',
           'user-id-email': email,
