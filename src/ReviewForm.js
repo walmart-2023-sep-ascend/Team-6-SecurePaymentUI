@@ -21,7 +21,7 @@ const ReviewForm = () => {
 
   const fetchProductDetails = async () => {
     try {
-      const response = await axios.get(`http://localhost:8990/api/product/reviewSearchId/${productId}`);
+      const response = await axios.get(`http://localhost:8989/api/product/reviewSearchId/${productId}`);
       console.log('Product details response:', response.data);
 
       if (Array.isArray(response.data) && response.data.length > 0) {
@@ -57,7 +57,6 @@ const ReviewForm = () => {
     }
 
     setLoading(true);
-
     const requestBody = {
       comments: [
         {
@@ -71,10 +70,11 @@ const ReviewForm = () => {
     };
 
     try {
-      const response = await axios.post(`http://localhost:8990/api/approval/${productId}/comment`, requestBody, {
+      const response = await axios.post(`http://localhost:8989/api/approval/${productId}/comment`, requestBody, {
         headers: {
           'Content-Type': 'application/json',
           'user-id-email': email,
+          'Authorization': 'Token=',
         },
       });
 

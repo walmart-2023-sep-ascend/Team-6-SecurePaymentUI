@@ -17,7 +17,7 @@ function App() {
   return (
     <div className="App">
       <Helmet>
-        <title>WalECart Online</title>
+        <title>Wall-E-Cart Online</title>
         <link rel="icon" type="image/png" href="public/logo.png"/>
       </Helmet>
     <Header />
