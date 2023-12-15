@@ -1,5 +1,3 @@
-  /* Combined CSS for ReviewForm and ProductDetails */
-
   .product-details-container {
     width: 70%;
     margin: 20px auto;
@@ -54,7 +52,7 @@
   }
 
   .star-ratings .star.selected {
-    color: #ffc107; /* Yellow color for selected stars */
+    color: #ffc107; 
   }
 
   .star {
@@ -66,13 +64,13 @@
     font-size: 18px;
     margin-top: 20px;
     color: #333;
-    position: relative; /* Added position relative */
+    position: relative; 
   }
 
   .review-form-textarea {
     width: 50%;
-    padding: 10px; /* Adjust the padding as needed */
-    font-size: 14px; /* Adjust the font size as needed */
+    padding: 10px; 
+    font-size: 14px;
     margin-top: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -98,17 +96,39 @@
 
   .review-form-input {
     width: 50%;
-    padding: 10px; /* Adjust the padding as needed */
-    font-size: 14px; /* Adjust the font size as needed */
+    padding: 10px; 
+    font-size: 14px; 
     margin-top: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
   }
 
   .error-message {
-    color: #e74c3c; /* Red color for error message */
+    color: #e74c3c; 
     font-size: 14px;
     align-content: center;
-    bottom: -20px; /* Position the error message below the input */
+    bottom: -20px; 
     left: 0;
+  }
+
+  .overlay {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: rgba(117, 116, 116, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+  }
+  
+  .loader {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #3498db;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 6s linear infinite;
   }

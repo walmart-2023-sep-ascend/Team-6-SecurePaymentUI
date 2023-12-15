@@ -1,16 +1,14 @@
-// Loader.js
-
 import React from 'react';
-import './Loader.css'; // Import the CSS styles for the loader
+import './Loader.css';
 
-function Loader() {
+const Loader = () => {
   return (
-    <div className="loader-overlay">
+    <div className="loader-backdrop">
       <div className="loader-container">
         <div className="loader"></div>
       </div>
     </div>
   );
-}
+};
 
 export default Loader;

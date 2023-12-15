@@ -1,11 +1,10 @@
-/* AdminPage.css */
 
 .admin-container {
   max-width: 1000px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Adjusted grid layout for responsiveness */
-  grid-gap: 20px; /* Reduced spacing between items */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+  grid-gap: 20px; 
   margin-bottom: 30px;
 }
 
@@ -41,7 +40,6 @@
   font-size: 14px;
 }
 
-/* Adjusted button styling for better visibility */
 .button-container button.approve {
   background-color: #4caf50;
   color: #fff;

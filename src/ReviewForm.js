@@ -1,5 +1,3 @@
-// ReviewForm.js
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './ReviewForm.css';
@@ -14,6 +12,7 @@ const ReviewForm = () => {
   const [productDetails, setProductDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
+  const [product, setProduct] = useState('');
 
   useEffect(() => {
     fetchProductDetails();
@@ -21,15 +20,20 @@ const ReviewForm = () => {
 
   const fetchProductDetails = async () => {
     try {
-      const response = await axios.get(`http://customerrating.eastus.cloudapp.azure.com:9801/api/product/reviewSearchId/${productId}`);
+      setProduct("Loading product details...");
+      const response = await axios.get(`http://localhost:8989/api/product/reviewSearchId/${productId}`);
       console.log('Product details response:', response.data);
 
       if (Array.isArray(response.data) && response.data.length > 0) {
         setProductDetails(response.data[0]);
       } else {
+        setProduct("No Products Found . . .");
+        setLoading(false);
         console.error('Invalid product details response:', response.data);
       }
     } catch (error) {
+        setProduct("No Products Found . . .");
+        setLoading(false);
       console.error('Error fetching product details:', error);
     }
   };
@@ -70,7 +74,7 @@ const ReviewForm = () => {
     };
 
     try {
-      const response = await axios.post(`http://customerrating.eastus.cloudapp.azure.com:9801/api/approval/${productId}/comment`, requestBody, {
+      const response = await axios.post(`http://localhost:8989/api/approval/${productId}/comment`, requestBody, {
         headers: {
           'Content-Type': 'application/json',
           'user-id-email': email,
@@ -104,7 +108,7 @@ const ReviewForm = () => {
             </div>
           </div>
         ) : (
-          <div>Loading product details...</div>
+          <div>{product}</div>
         )}
 
         <h1>Add Review</h1>

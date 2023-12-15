@@ -5,6 +5,7 @@ import Loader from './Loader';
 import { useParams } from 'react-router-dom';
 import Modal from 'react-modal';
 
+
 function PaymentPage() {
 
   const [showModal, setShowModal] = useState(false);
@@ -59,7 +60,6 @@ function PaymentPage() {
     console.log(method);
     setState((prev) => ({ ...prev, paymentMethod: method }));
     if (method === 'credit_card') {
-      // Display a message for credit card accordion
       showAlert('Credit Card Payment gateway is not available at the moment - Please try other atlernative payment methods');
       
     } else {
@@ -80,8 +80,6 @@ function PaymentPage() {
 
   const handleSubmit = async () => {
     setState((prev) => ({ ...prev, paymentInProgress: true }));
-  
-    setTimeout(async () => {
       setState((prev) => ({ ...prev, paymentInProgress: false }));
   
       try {
@@ -165,9 +163,8 @@ function PaymentPage() {
         }
       } catch (error) {
         setLoading(false);
-        console.error('Error during payment:', error);
+        showAlert('Error during payment, Please try again after sometimes');
       }
-    }, 1000);
   };
   
   
@@ -254,7 +251,7 @@ function PaymentPage() {
 
     } catch (error) {
       setLoading(false);
-      console.error(`Error generating OTP: ${error.message}`);
+      showAlert(`Error generating OTP: ${error.message}`);
     }
   };
 
@@ -277,7 +274,7 @@ function PaymentPage() {
       if (result.responsecode === '200') {
         setLoading(false);
         // Handle successful OTP validation
-        console.log('OTP validation successful');
+        console.log('Successfully Authenticated');
         console.log(state.otp);
         setState((prev) => ({ ...prev, submitPaymentEnabled: true, otpVerified: true, incorrectOtp: false }));
       } else {
@@ -288,7 +285,7 @@ function PaymentPage() {
       }
     } catch (error) {
       setLoading(false);
-      console.error(`Error during OTP validation: ${error.message}`);
+      showAlert(`Error during OTP validation: ${error.message}`);
       setState((prev) => ({ ...prev, submitPaymentEnabled: false, otpVerified: false, incorrectOtp: true }));
     }
   };
@@ -322,11 +319,11 @@ function PaymentPage() {
           setState((prev) => ({ ...prev, totalAmount: result.totalAmount }));
         } else {
           setLoading(false);
-          console.error('Wallet amount not found in the API response');
+          showAlert('Wallet amount not found in the API response');
         }
       } catch (error) {
         setLoading(false);
-        console.error(`Error fetching payable amount: ${error.message}`);
+        showAlert(`We encountered an issue while fetching your cart amount. Please try again later.`);
       }
     };
 
@@ -349,6 +346,7 @@ function PaymentPage() {
 
       if (!response.ok) {
         setLoading(false);
+        showAlert("It is taking time to load than usual, Please try again or contact our customer service desk");
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
@@ -371,11 +369,11 @@ function PaymentPage() {
         }));
       } else {
         setLoading(false);
-        console.error('Unexpected response code:', result.responsecode);
+        showAlert('Unexpected Error:', result.responsecode, 'Please contact cutomer service with this error code');
       }
     } catch (error) {
       setLoading(false);
-      console.error(`Error during wallet validation: ${error.message}`);
+      showAlert(`We apologize, but there was an issue retrieving your wallet balance. Please try again later.`);
     }
   };
 
@@ -423,15 +421,15 @@ function PaymentPage() {
         } else {
           setLoading(false);
           setState((prev) => ({ ...prev, submitPaymentEnabled: false }));
-          console.error('Error fetching shipping details:', data.message);
+          showAlert('Error fetching shipping details:', data.message);
         }
       } else {
         setLoading(false);
-        console.error('Error fetching shipping details:', response.statusText);
+        showAlert('Error fetching shipping details:', response.statusText);
       }
     } catch (error) {
       setLoading(false);
-      console.error('Error fetching shipping details:', error);
+      showAlert('Error fetching shipping details:', error);
     }
   };
 
@@ -607,7 +605,7 @@ function PaymentPage() {
 
       {state.paymentInProgress && (
         <div className="overlay">
-          <div className="loader"></div>
+          <Loader />
         </div>
       )}
 

@@ -4,8 +4,13 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import Loader from './Loader';
+import Modal from 'react-modal';
 
 function FeedbackForm() {
+    const [averageRating, setAverageRating] = useState(0);
+    const [commentsRequired, setCommentsRequired] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [modalContent, setModalContent] = useState('');
     const navigate = useNavigate();
     const [responses, setResponses] = useState({
       question1: 0,
@@ -20,6 +25,15 @@ function FeedbackForm() {
     const [userComments, setUserComments] = useState('');
     const [loading, setLoading] = useState(false); 
     const [allQuestionsAnswered, setAllQuestionsAnswered] = useState(false);
+
+    const showAlert = (content) => {
+      setModalContent(content);
+      setShowModal(true);
+    };
+  
+    const closeModal = () => {
+      setShowModal(false);
+    };
   
     const handleStarClick = (question, rating) => {
       setResponses({
@@ -38,10 +52,20 @@ function FeedbackForm() {
       } else {
         setAllQuestionsAnswered(false);
       }
-    };
   
-    const handleUserCommentsChange = (e) => {
-      setUserComments(e.target.value);
+      const newAverageRating =
+        (responses.question1 +
+          responses.question2 +
+          responses.question3 +
+          responses.question4 +
+          responses.question5 +
+          rating) /
+        5;
+  
+      const newCommentsRequired = newAverageRating < 3;
+  
+      setAverageRating(newAverageRating);
+      setCommentsRequired(newCommentsRequired);
     };
   
     const handleSubmit = async () => {
@@ -51,8 +75,10 @@ function FeedbackForm() {
         responses.question3 !== 0 &&
         responses.question4 !== 0 &&
         responses.question5 !== 0;
+
+      const isCommentsRequired = averageRating < 3;
     
-      if (isAllQuestionsAnswered) {
+      if (isAllQuestionsAnswered && (!isCommentsRequired || (isCommentsRequired && userComments.trim() !== ''))) {
         console.log('User feedback:', responses);
         console.log('User comments:', userComments);
     
@@ -99,19 +125,22 @@ function FeedbackForm() {
           } else {
             setLoading(false);
             // Log an error or handle the response accordingly
-            console.error('Error while submitting feedback. Status:', response.status);
+            showAlert('Error while submitting feedback. Status:', response.status);
           }
           
         } catch (error) {
           setLoading(false);
           // Handle any errors (e.g., show an error message)
-          console.error('Error while submitting feedback:', error);
+          showAlert('Error while submitting feedback:', error);
         }
       } else {
-        alert('Please answer all questions before submitting.');
+        showAlert('Please answer all questions before submitting.');
       }
     };
     
+    const handleUserCommentsChange = (e) => {
+      setUserComments(e.target.value);
+    };
 
   return (
     <div className="feedback-container">
@@ -213,20 +242,25 @@ function FeedbackForm() {
           </div>
         </div>
           {/* User Comments */}
-          <div className="user-comments">
-          <label htmlFor="comments">Comments:</label>
-          <div><textarea
+          <div className={`user-comments ${commentsRequired ? 'mandatory' : ''}`}>
+          <label htmlFor="comments">
+            Comments{commentsRequired ? <span className="mandatory">*</span> : null}:
+          </label>
+          <div>
+            <textarea
               id="comments"
               name="comments"
               value={userComments}
               onChange={handleUserCommentsChange}
               rows="4"
               cols="10"
-          /></div>
+              className={commentsRequired ? 'mandatory' : ''}
+            />
           </div>
+        </div>
 
         {/* Submit button */}
-        {loading ? ( // Show loader if loading state is true
+        {loading ? ( 
           <Loader />
         ) : (
         <button className={`text-center ${allQuestionsAnswered ? '' : 'disabled'}`} onClick={handleSubmit}>
@@ -234,6 +268,20 @@ function FeedbackForm() {
         </button>
         )}
       </div>
+
+      <Modal
+        isOpen={showModal}
+        onRequestClose={closeModal}
+        contentLabel="Custom Alert"
+        className="custom-modal"
+        overlayClassName="custom-modal-overlay"
+      >
+        <div>
+          <p>{modalContent}</p>
+          <button onClick={closeModal}>Close</button>
+        </div>
+      </Modal>
+
     </div>
   );
 }

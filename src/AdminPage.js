@@ -12,7 +12,7 @@ const AdminPage = () => {
 
   const fetchPendingReviews = async () => {
     try {
-      const response = await axios.get('http://customerrating.eastus.cloudapp.azure.com:9801/api/approval/');
+      const response = await axios.get('http://localhost:8989/api/approval/');
       const reviewsWithProductDetails = await Promise.all(
         response.data.map(async (review) => {
           const productDetails = await fetchProductDetails(review.productId);
@@ -29,7 +29,7 @@ const AdminPage = () => {
 
   const fetchProductDetails = async (productId) => {
     try {
-      const response = await axios.get(`http://customerrating.eastus.cloudapp.azure.com:9801/api/product/reviewSearchId/${productId}`);
+      const response = await axios.get(`http://localhost:8989/api/product/reviewSearchId/${productId}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching product details for product ID ${productId}:`, error);
@@ -42,7 +42,7 @@ const AdminPage = () => {
       setLoading(true);
       console.log(productId, userId, email, comment, rating);
       const response = await axios.post(
-        `http://customerrating.eastus.cloudapp.azure.com:9801/api/product/${productId}/comments`,
+        `http://localhost:8989/api/product/${productId}/comments`,
         {
           user: {
             userId: userId,
@@ -61,7 +61,7 @@ const AdminPage = () => {
 
       console.log('Review approved successfully:', response.data);
       const deleteResponse = await axios.delete(
-        `http://customerrating.eastus.cloudapp.azure.com:9801/api/approval/delete/${productId}/${userId}`
+        `http://localhost:8989/api/approval/delete/${productId}/${userId}`
       );
       console.log('Deletion of approval record successful:', deleteResponse.data);
 
@@ -77,7 +77,7 @@ const AdminPage = () => {
     try {
       setLoading(true);
       const response = await axios.delete(
-        `http://customerrating.eastus.cloudapp.azure.com:9801/api/approval/delete/${productId}/${userId}`,
+        `http://localhost:8989/api/approval/delete/${productId}/${userId}`,
         {
           headers: {
             'user-id-email': email,
